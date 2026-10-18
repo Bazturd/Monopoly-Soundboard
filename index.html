@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#b5121b">
+<title>Monopoly Mayhem Soundboard</title>
+<style>
+:root{--ink:#241d20;--paper:#fff8e9}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(160deg,#fff8e9,#f6e8c9);color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:#c91522;color:white;text-align:center;padding:22px 16px 18px;border-bottom:5px solid #8c0b14;box-shadow:0 4px 0 #e9b84c}
+header .eyebrow{font-size:.75rem;font-weight:900;letter-spacing:.18em;text-transform:uppercase}
+h1{font-size:clamp(1.8rem,8vw,2.6rem);line-height:1;margin:7px 0}
+header p{margin:8px 0 0;font-weight:650;font-size:.92rem}
+main{max-width:720px;margin:auto;padding:16px 13px 30px}
+.tip{background:#fff;border:2px solid #ead7ad;border-radius:14px;padding:11px 13px;font-size:.88rem;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+button.sound{border:0;border-radius:18px;min-height:116px;padding:13px 8px;color:white;font:inherit;font-weight:900;box-shadow:0 5px 0 rgba(0,0,0,.2),inset 0 2px 0 rgba(255,255,255,.4);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;touch-action:manipulation;transition:transform .08s,filter .08s}
+button.sound:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.2);filter:brightness(1.1)}
+.emoji{font-size:2.15rem;line-height:1.15}
+.name{font-size:1.03rem;line-height:1.15}
+.sub{font-size:.72rem;font-weight:650;opacity:.92}
+.red{background:#e52b35}.green{background:#14a94a}.blue{background:#147ce5}.orange{background:#f07813}.purple{background:#7838c9}.gold{background:#e7ad00;color:#302000!important}.teal{background:#079aab}.pink{background:#e44c91}.dark{background:#38363b}.lime{background:#5c9d20}
+footer{text-align:center;padding:15px 5px;color:#695b4b;font-size:.78rem}
+#status{font-weight:800;text-align:center;margin:14px 0 0;min-height:1.4em}
+.controls{display:flex;justify-content:center;margin-top:12px}
+.smallbtn{background:#fff;border:2px solid #ddc99d;border-radius:999px;padding:10px 17px;font-weight:800;color:#493b2b}
+@media(min-width:560px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}button.sound{min-height:125px}}
+</style>
+</head>
+<body>
+<header><div class="eyebrow">The totally unofficial</div><h1>MONOPOLY MAYHEM</h1><p>Tap a button. Ruin a friendship. 🎲</p></header>
+<main>
+<div class="tip">🔊 <b>Sound on!</b> Turn up your iPhone volume, then tap a big button. If audio is blocked, tap once more.</div>
+<div class="grid">
+<button class="sound green" data-sound="dice"><span class="emoji">🎲</span><span class="name">Dice Roll</span><span class="sub">Rattle, rattle, clack!</span></button>
+<button class="sound blue" data-sound="collect"><span class="emoji">💷</span><span class="name">Collect £200</span><span class="sub">Cha-ching!</span></button>
+<button class="sound red" data-sound="buy"><span class="emoji">🏠</span><span class="name">Buy Property</span><span class="sub">Mine! All mine!</span></button>
+<button class="sound orange" data-sound="rent"><span class="emoji">💸</span><span class="name">Pay Rent</span><span class="sub">Wallet pain</span></button>
+<button class="sound purple" data-sound="jail"><span class="emoji">🚔</span><span class="name">Go to Jail</span><span class="sub">You have been got!</span></button>
+<button class="sound gold" data-sound="chance"><span class="emoji">❓</span><span class="name">Chance Card</span><span class="sub">Uh-oh… maybe?</span></button>
+<button class="sound teal" data-sound="chest"><span class="emoji">🧰</span><span class="name">Community Chest</span><span class="sub">A surprise!</span></button>
+<button class="sound dark" data-sound="auction"><span class="emoji">🔨</span><span class="name">Auction</span><span class="sub">Going once… twice…</span></button>
+<button class="sound pink" data-sound="bankrupt"><span class="emoji">📉</span><span class="name">Bankrupt</span><span class="sub">Financial oof</span></button>
+<button class="sound lime" data-sound="win"><span class="emoji">🏆</span><span class="name">WINNER!</span><span class="sub">Gloat responsibly</span></button>
+</div>
+<div id="status" aria-live="polite">Ready when you are…</div>
+<div class="controls"><button class="smallbtn" id="stop">■ Stop sounds</button></div>
+<footer>Best played at full volume. Apologies to your neighbours.</footer>
+</main>
+<script>
+let ctx=null, activeNodes=[];
+async function audio(){
+  if(!ctx){
+    const AudioCtx=window.AudioContext||window.webkitAudioContext;
+    if(!AudioCtx) throw new Error('Web Audio is not supported by this browser.');
+    ctx=new AudioCtx();
+  }
+  if(ctx.state!=='running') await ctx.resume();
+  return ctx;
+}
+async function tone(freq,start,duration,type='sine',vol=.18,endFreq=null){
+ const c=await audio(),o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(freq,start);
+ if(endFreq!==null)o.frequency.exponentialRampToValueAtTime(Math.max(1,endFreq),start+duration);
+ g.gain.setValueAtTime(.0001,start);g.gain.exponentialRampToValueAtTime(vol,start+.012);g.gain.exponentialRampToValueAtTime(.0001,start+duration);
+ o.connect(g);g.connect(c.destination);o.start(start);o.stop(start+duration+.03);activeNodes.push(o);
+}
+async function noise(start,duration,vol=.12,filterFreq=1200){
+ const c=await audio(),n=Math.floor(c.sampleRate*duration),b=c.createBuffer(1,n,c.sampleRate),d=b.getChannelData(0);
+ for(let i=0;i<n;i++)d[i]=Math.random()*2-1;
+ const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=b;f.type='lowpass';f.frequency.value=filterFreq;
+ g.gain.setValueAtTime(vol,start);g.gain.exponentialRampToValueAtTime(.0001,start+duration);s.connect(f);f.connect(g);g.connect(c.destination);s.start(start);s.stop(start+duration);activeNodes.push(s);
+}
+async function melody(notes,step=.13,type='triangle',vol=.15){const c=await audio(),t=c.currentTime+.02;notes.forEach((n,i)=>tone(n,t+i*step,step*.9,type,vol))}
+async function play(kind){
+ const c=await audio(),t=c.currentTime+.03;
+ if(kind==='dice'){for(let i=0;i<6;i++){noise(t+i*.09,.075,.12,2400);tone(150+Math.random()*260,t+i*.09,.06,'square',.055)}}
+ if(kind==='collect'){melody([660,880,1100,1320],.11,'sine',.17);tone(1760,t+.5,.28,'sine',.12)}
+ if(kind==='buy'){melody([392,494,587,784],.14,'triangle',.16);tone(988,t+.62,.34,'sine',.15)}
+ if(kind==='rent'){melody([740,550,370,220],.19,'sawtooth',.11);noise(t+.65,.28,.1,500)}
+ if(kind==='jail'){tone(500,t,.35,'sawtooth',.12,120);tone(180,t+.38,.55,'square',.12,70);noise(t+.22,.14,.16,900);tone(880,t+.9,.35,'triangle',.1,330)}
+ if(kind==='chance'){tone(330,t,.16,'sine',.12,660);tone(440,t+.18,.16,'sine',.12,880);tone(660,t+.36,.38,'triangle',.15,220)}
+ if(kind==='chest'){noise(t,.22,.11,1800);melody([523,659,784,1047,784],.12,'triangle',.14)}
+ if(kind==='auction'){for(let i=0;i<3;i++){tone(900,t+i*.35,.09,'square',.12,600);noise(t+i*.35,.06,.08,2000)}tone(120,t+1.12,.45,'triangle',.2,55)}
+ if(kind==='bankrupt'){melody([440,415,370,311,220,146],.25,'sawtooth',.12);tone(65,t+1.55,.65,'sine',.22,35)}
+ if(kind==='win'){melody([523,659,784,1047,784,1047,1319],.15,'triangle',.16);tone(1568,t+1.12,.6,'sine',.16);noise(t+1.1,.55,.06,3500)}
+ const labels={dice:'🎲 CHAOS HAS BEGUN!',collect:'💷 MONEY! MONEY! MONEY!',buy:'🏠 PROPERTY TYCOON ALERT!',rent:'💸 YOUR WALLET SAYS OUCH.',jail:'🚔 DO NOT PASS GO!',chance:'❓ THE FATE DECK HAS SPOKEN.',chest:'🧰 COMMUNITY SURPRISE!',auction:'🔨 SOLD! TO THE CHAOS!',bankrupt:'📉 BANK ACCOUNT: BYE-BYE.',win:'🏆 ABSOLUTE PROPERTY LEGEND!'};
+ document.getElementById('status').textContent=labels[kind];
+}
+document.querySelectorAll('[data-sound]').forEach(b=>b.addEventListener('click',async()=>{
+ const status=document.getElementById('status');
+ try {
+   status.textContent='🔊 Playing…';
+   await play(b.dataset.sound);
+ } catch(err) {
+   console.error(err);
+   status.textContent='Audio did not start. Turn up volume and tap again.';
+ }
+}));
+document.getElementById('stop').addEventListener('click',async()=>{
+ if(ctx){await ctx.close();ctx=null;activeNodes=[]}
+ document.getElementById('status').textContent='Silence… for now. 🤫';
+});
+</script>
+</body>
+</html>
